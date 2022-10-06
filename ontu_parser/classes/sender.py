@@ -1,4 +1,6 @@
+from datetime import datetime
 import requests
+from selenium import webdriver
 
 from .base import BaseClass
 
@@ -14,10 +16,83 @@ class RequestsEnum:
         OK = 200
 
 
+class TTLValue(BaseClass):
+    _ttl: int = 3600
+    _value: object = None
+
+    issued_at: datetime = datetime.min
+
+    def is_valid(self):
+        if (datetime.now() - self.issued_at).seconds > self._ttl:
+            return True
+        else:
+            return False
+
+    def set_value(self, value):
+        self.issued_at = datetime.now()
+        self._value = value
+
+
+class Cookies(TTLValue):
+
+    def __init__(self, sender):
+        self.sender: Sender = sender
+
+    @property
+    def value(self)->dict[str, str]:
+        if self._value and self.is_valid():
+            return self._value
+        else:
+            self.get_cookie()
+            if not self._value:
+                raise Exception("Could not get cookies")
+            return self._value
+    
+    def get_cookie(self):
+        link = self.sender.link
+        notbot = self.sender.notbot.value
+
+        response = requests.get(link, cookies={'notbot': notbot})
+        key = 'PHPSESSID'
+        cookie = response.cookies.get(key)
+
+        self._value = {key: cookie, 'notbot': notbot}
+
+
+class NotBot(TTLValue):
+
+    @property
+    def value(self)->str:
+        if self._value and self.is_valid():
+            return self._value
+        else:
+            self.get_nobot()
+            if not self._value:
+                raise Exception("Could not get notbot")
+            return self._value
+
+    def get_nobot(self):
+        driver = webdriver.Firefox()
+        driver.get('https://rozklad.ontu.edu.ua/guest_n.php')
+        notbot = None
+        while True:
+            if notbot:
+                break
+            cookies = driver.get_cookies()
+            if cookies:
+                for cookie in cookies:
+                    if cookie['name'] == 'notbot':
+                        notbot = cookie['value']
+        self.set_value(notbot)
+
+
 class Sender(BaseClass):
     link: str = 'https://rozklad.ontu.edu.ua/guest_n.php'
-    nobot: str = 'ab709742d0971929fd95a7e0d618bc4c'  # temporary
-    cookies: dict[str, str] = {}
+    notbot: NotBot = NotBot()
+    cookies: Cookies = None
+
+    def __init__(self):
+        self.cookies = Cookies(self)
 
     _responses: list[requests.Response] = []
 
@@ -29,14 +104,13 @@ class Sender(BaseClass):
                     RequestsEnum.CHOICES
                 ),
                 method,
-
             )
 
         try:
             response = session.request(
                 method=method,
                 url=self.link,
-                cookies=self.cookies,
+                cookies=self.cookies.value,
                 data=data
             )
         except Exception as E:
