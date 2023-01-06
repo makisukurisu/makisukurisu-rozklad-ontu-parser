@@ -1,27 +1,30 @@
+"""Module for parser class"""
+from bs4 import BeautifulSoup
+
 from .base import BaseClass
 from .sender import Sender
 
-from bs4 import BeautifulSoup
 
 class Parser(BaseClass):
+    """Parser class to get information from Rozklad ONTU"""
     sender: Sender = Sender()
 
     def parse(self):
+        """Parses information, requiring input from user (will be changed)"""
         base_response = self.sender.send_request('GET')
         faculty_page = BeautifulSoup(base_response.content.decode('utf-8'), 'html.parser')
-        all_fcs = faculty_page.find_all(attrs={'class': 'fc'})
-        all_fcs_dict = {}
-        for fc in all_fcs:
-            all_fcs_dict[fc.span.string] = fc['data-id']
+        all_faculties = faculty_page.find_all(attrs={'class': 'fc'})
+        all_faculties_dict = {}
+        for faculty in all_faculties:
+            all_faculties_dict[faculty.span.string] = faculty['data-id']
 
-        for key in all_fcs_dict.keys():
+        for key in all_faculties_dict:
             print(key)
 
         faculty_name = input('Введите название факультета: ')
         while True:
-            if faculty_name in all_fcs_dict:
+            if faculty_name in all_faculties_dict:
                 break
-            else:
-                faculty_name = input('Факультет не найден, попробуйте ещё раз: ')
-        groups = self.sender.send_request('POST', {'facultyid': all_fcs_dict[faculty_name]})
+            faculty_name = input('Факультет не найден, попробуйте ещё раз: ')
+        groups = self.sender.send_request('POST', {'facultyid': all_faculties_dict[faculty_name]})
         print(groups)

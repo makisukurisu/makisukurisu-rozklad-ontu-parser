@@ -1,0 +1,1 @@
+pylint ontu_parser
