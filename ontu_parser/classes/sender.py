@@ -129,7 +129,7 @@ class Sender(BaseClass):
             )
 
         try:
-            response = session.request(
+            response: requests.Response = session.request(
                 method=method,
                 url=self.link,
                 cookies=self.cookies.value,
