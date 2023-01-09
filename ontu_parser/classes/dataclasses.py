@@ -12,7 +12,7 @@ from .base import BaseClass
 class CheckTag:
     """Mixin for _check_tag method"""
     @staticmethod
-    def _check_tag(tag):
+    def _check_tag(tag: Tag):
         """Checks if tag is valid for usage"""
         raise Exception("`_check_tag` Not implemented")
 
@@ -50,15 +50,15 @@ class Faculty(BaseTagClass):
         cls._check_tag(tag)
         return cls(faculty_tag=tag)
 
-    def get_picture(self):
+    def get_faculty_picture(self):
         """Returns relative link to picture (if present)"""
         return self.faculty_tag.attrs.get('data-cover', None)
 
-    def get_id(self):
+    def get_faculty_id(self):
         """Returns temporary id of faculty (for later use in search)"""
         return self.faculty_tag.attrs['data-id']
 
-    def get_name(self):
+    def get_faculty_name(self):
         """Returns name of the faculty"""
         return self.faculty_tag.span.string
 
@@ -132,3 +132,111 @@ class Group(BaseTagClass):
         # Feels bad :(
         attrs.pop('icon')
         return attrs[0]
+
+
+class Schedule(BaseTagClass):
+    """Describes schedule from HTML table"""
+
+    schedule_table: Tag
+    subgroups: list[str] = []
+    _schedule_data: dict = {}
+
+    _splitter_class = 'bg-darkCyan'
+
+    _all_time = False
+
+    @property
+    def week(self):
+        """Gets data for this week"""
+        if not self._schedule_data:
+            self._get_week()
+        return self._schedule_data
+
+    @staticmethod
+    def _check_tag(tag):
+        if tag.name != 'table':
+            raise Exception(f"Invalid tag: {tag}. Should be table")
+
+    @classmethod
+    def from_tag(cls, tag, is_all_time=False):
+        cls._check_tag(tag)
+        obj = cls()
+        obj.schedule_table = tag
+        obj._all_time = is_all_time
+        return obj
+
+    def _parse_subgroups(self):
+        """This method prepares subgroups for later use"""
+        sub_groups_list = []
+        table_head = self.schedule_table.thead
+        head_rows = table_head.find_all(
+            name='tr'
+        )
+
+        # Hardcoding positions! Yikes!
+        # head_rows[0] - meta info (`Day`, `Pair` columns, Group name)
+        # head_rows[1] - sub_groups (a/b etc)
+
+        sub_groups_tag = head_rows[1]
+        sub_groups_tags = sub_groups_tag.find_all(
+            name='th'
+        )
+
+        for sub_group in sub_groups_tags:
+            sub_groups_list.append(sub_group.text.strip())
+
+        self.subgroups = sub_groups_list
+
+    def _prepare_day_tag(self, day_name_tag):
+        """
+            Parses day from 'day_name_tag'*
+            Returns name of that day and a list of tags that represent pairs
+
+            *day_name_tag is a tag that contains name of the tag
+             It also has attr - class = day
+        """
+        pair_tags = []
+
+        day_name: str = day_name_tag.text
+
+        first_pair_tag = day_name_tag.parent
+        # We also have to include this 'top tag', since it's first pair
+        pair_tags.append(first_pair_tag)
+
+        next_pair_tag = first_pair_tag.next_sibling
+        # next_sibling gives next tag on the same level of hierarchy
+        while True:
+            if not next_pair_tag or isinstance(next_pair_tag, str):
+                # We may not have next sibling
+                # Or, as it happens RN - we may get '  ' as next tag :|
+                break
+            if self._splitter_class in next_pair_tag.attrs.get('class', []):
+                # splitter has class `_splitter_class` (like bg-darkCyan)
+                # if we hit splitter - day has ended
+                break
+            pair_tags.append(next_pair_tag)
+            next_pair_tag = next_pair_tag.next_sibling
+        pair_tags.pop()
+        return day_name, pair_tags
+
+    def _prepare_tags(self, tags):
+        if self._all_time:
+            # Find out, if it's worth the hustle
+            if tags:
+                return True
+            return False
+        return False
+
+    def _get_week(self):
+        """Iteratively loops trough table to get data for all days"""
+        table_body = self.schedule_table.tbody
+        days = table_body.find_all(
+            attrs={
+                'class': 'day'
+            }
+        )
+        for day in days:
+            day_name, tags = self._prepare_day_tag(day)
+            prepared_days = self._prepare_tags(tags)
+            self._schedule_data[day_name] = prepared_days
+        return self._schedule_data

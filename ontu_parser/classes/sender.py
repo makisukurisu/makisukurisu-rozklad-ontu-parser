@@ -105,6 +105,7 @@ class NotBot(TTLValue):
                 for cookie in cookies:
                     if cookie['name'] == 'notbot':
                         notbot = cookie['value']
+        driver.close()
         return self.set_value(notbot)
 
 
