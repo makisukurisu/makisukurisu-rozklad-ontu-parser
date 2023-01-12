@@ -9,7 +9,7 @@ from bs4.element import Tag
 from .base import BaseClass
 
 
-class CheckTag:
+class CheckTagMixin:
     """Mixin for _check_tag method"""
     @staticmethod
     def _check_tag(tag: Tag):
@@ -17,7 +17,7 @@ class CheckTag:
         raise Exception("`_check_tag` Not implemented")
 
 
-class BaseTagClass(BaseClass, CheckTag):
+class BaseTag(BaseClass, CheckTagMixin):
     """Base Tag Class for parsing BS4 tags from responses"""
     @classmethod
     def from_tag(cls, tag):
@@ -26,7 +26,7 @@ class BaseTagClass(BaseClass, CheckTag):
 
 
 @define
-class Faculty(BaseTagClass):
+class Faculty(BaseTag):
     """Describes faculty from BS4 tag"""
     faculty_tag: Tag
 
@@ -64,7 +64,7 @@ class Faculty(BaseTagClass):
 
 
 @define
-class Group(BaseTagClass):
+class Group(BaseTag):
     """Describes group from BS4 tag"""
 
     group_tag: Tag
@@ -113,7 +113,7 @@ class Group(BaseTagClass):
 
     def get_group_id(self):
         """Returns (temporary) id of this group"""
-        return self.group_tag.attrs['data-id']
+        return self.group_tag.attrs["data-id"]
 
     def get_group_name(self):
         """Retunrs a name of the group or None"""
@@ -134,16 +134,222 @@ class Group(BaseTagClass):
         return attrs[0]
 
 
-class Schedule(BaseTagClass):
+class BaseLesson(BaseTag):
+    """
+        Describes lesson from bs4 tag
+
+        Note: Lesson is a concrete even with date and teacher
+        Pair on the other hand just states at which time lesson will happen
+    """
+
+    lesson_tag: Tag
+
+    lesson_date: str = ""
+    teacher: dict = {}
+    lesson_name: dict = {}
+    lesson_info: str = ""
+
+    @staticmethod
+    def _check_tag(tag: Tag):
+        # Dear Gods, forgive me for not checking tags for lessons
+        pass
+
+    def parse_tag(self):
+        """This method parses bs4 and stores data from it in object's fields"""
+        raise Exception(
+            "`parse_tag` was not implemented\n"
+            "You are probably executing this from BaseLesson\n"
+            "Please use one of derived classes"
+        )
+
+
+class AllTimeLesson(BaseLesson):
+    """
+        This class should be used to parse lesson from bs4 tag
+        If you are getting schedule for all time
+    """
+    @classmethod
+    def from_tag(cls, tag):
+        obj = cls()
+        obj.lesson_tag = tag
+        obj.parse_tag()
+        return obj
+
+    def parse_tag(self):
+        lesson = self.lesson_tag
+        self.lesson_date = lesson.text
+        predm = lesson.nextSibling
+        self.lesson_name = {
+            'short': predm.text,
+            'full': predm.attrs.get('title', "Not Set")
+        }
+        prp = predm.nextSibling
+        if isinstance(prp, str):
+            # <br> may be interpreted as '\n'
+            prp = prp.nextSibling
+        self.teacher = {
+            'short': prp.text.replace('\xa0', ' '),  # Why...
+            'full': prp.attrs.get('title', "Not Set")
+        }
+        card = prp.nextSibling
+        if isinstance(card, str):
+            # <br> may be interpreted as '\n'
+            card = card.nextSibling
+        card_content: Tag = card.find(
+            attrs={
+                'class': 'card-content'
+            }
+        )
+        if card_content:
+            self.lesson_info = card_content.text.replace('\t', '')
+
+
+class RegularLesson(BaseLesson):
+    """
+        This class should be used to parse lesson from bs4 tag
+        If you are getting schedule for current week
+    """
+    @classmethod
+    def from_tag(cls, tag):
+        obj = cls()
+        obj.lesson_tag = tag
+        obj.parse_tag()
+        return obj
+
+    def parse_tag(self):
+        lesson = self.lesson_tag
+        predm = lesson.nextSibling
+        self.lesson_name = {
+            'short': predm.text,
+            'full': predm.attrs.get('title', "Not Set")
+        }
+        prp = predm.nextSibling
+        if isinstance(prp, str):
+            # <br> may be interpreted as '\n'
+            prp = prp.nextSibling
+        self.teacher = {
+            'short': prp.text.replace('\xa0', ' '),  # Why...
+            'full': prp.attrs.get('title', "Not Set")
+        }
+        card = prp.nextSibling
+        if isinstance(card, str):
+            # <br> may be interpreted as '\n'
+            card = card.nextSibling
+        card_content: Tag = card.find(
+            attrs={
+                'class': 'card-content'
+            }
+        )
+        if card_content:
+            self.lesson_info = card_content.text.replace('\t', '')
+
+
+class Pair(BaseTag):
+    """
+        Describes pair from bs4 tag
+
+        Note: Pair describes when certain Lesson will happen
+    """
+
+    pair_tag: Tag
+    lessons: list[BaseLesson] = []
+
+    pair_no: int = None
+    _subgroup_id: int = 0
+
+    @staticmethod
+    def _check_tag(tag: Tag):
+        pass
+
+    @classmethod
+    def from_tag(cls, tag, subgroup_id=0):
+        cls._check_tag(tag)
+        obj = cls()
+        obj._subgroup_id = subgroup_id
+
+        obj.pair_tag = tag
+        obj.set_pair_number()
+        pair = obj.get_pair_tag_for_subgroup()
+        lessons = cls.get_lessons(pair)
+        obj.lessons = lessons
+        return obj
+
+    def set_pair_number(self):
+        """This method gets pair number for better identification"""
+        pair_no_tag = self.pair_tag.find(
+            attrs={
+                'class': 'lesson'
+            }
+        )
+        self.pair_no = int(pair_no_tag.text)
+
+    def get_pair_tag_for_subgroup(self):
+        """
+            This method returns tag for this pair accounting for subgroup
+            Currently opening a page for subgroup (like KN-321[a]) opens
+            a page for both subgroups (or a group), thus we have to get a correct cell
+        """
+        pair_no_tag = self.pair_tag.find(
+            attrs={
+                'class': 'lesson'
+            }
+        )
+        skip = 1 + self._subgroup_id
+        pair_tag = None
+        for _ in range(skip):
+            if not pair_tag:
+                pair_tag = pair_no_tag.nextSibling
+            else:
+                pair_tag = pair_tag.nextSibling
+        return pair_tag
+
+    @staticmethod
+    def get_lessons(pair: Tag):
+        """Parses lessons for this pair"""
+        # All dates have this class
+        all_dates = pair.find_all(
+            attrs={
+                'class': 'fg-blue'
+            }
+        )
+        # There is at least one tag with this class if
+        # there are lessons
+        lesson = pair.find(
+            attrs={
+                'class': 'predm'
+            }
+        )
+        lessons = []
+        if not any([len(all_dates), lesson]):
+            return lessons
+        if len(all_dates) > 0:
+            # This means we are dealing with 'all time' records
+            for lesson in all_dates:
+                lessons.append(
+                    AllTimeLesson.from_tag(
+                        lesson
+                    )
+                )
+            return lessons
+        # This means we are dealing with single week records
+        lessons.append(
+            RegularLesson.from_tag(
+                lesson
+            )
+        )
+        return lessons
+
+
+class Schedule(BaseTag):
     """Describes schedule from HTML table"""
 
     schedule_table: Tag
     subgroups: list[str] = []
-    _schedule_data: dict = {}
+    subgroup_id: int = 0
+    _schedule_data: dict[str, list[Pair]] = {}
+    _subgroup: str = ''
 
-    _splitter_class = 'bg-darkCyan'
-
-    _all_time = False
+    _splitter_class: str = 'bg-darkCyan'
 
     @property
     def week(self):
@@ -158,12 +364,24 @@ class Schedule(BaseTagClass):
             raise Exception(f"Invalid tag: {tag}. Should be table")
 
     @classmethod
-    def from_tag(cls, tag, is_all_time=False):
+    def from_tag(cls, tag, subgroup=None):
         cls._check_tag(tag)
         obj = cls()
         obj.schedule_table = tag
-        obj._all_time = is_all_time
+
+        obj._subgroup = subgroup
+        obj._get_subgroup_id()
+
         return obj
+
+    def _get_subgroup_id(self):
+        if self._subgroup:
+            if not self.subgroups:
+                self._parse_subgroups()
+            try:
+                self.subgroup_id = self.subgroups.index(self._subgroup)
+            except ValueError:
+                print("Invalid subgroup! Please try making request again")
 
     def _parse_subgroups(self):
         """This method prepares subgroups for later use"""
@@ -216,16 +434,21 @@ class Schedule(BaseTagClass):
                 break
             pair_tags.append(next_pair_tag)
             next_pair_tag = next_pair_tag.next_sibling
-        pair_tags.pop()
+        if isinstance(pair_tags[-1], str):
+            pair_tags.pop()
         return day_name, pair_tags
 
     def _prepare_tags(self, tags):
-        if self._all_time:
-            # Find out, if it's worth the hustle
-            if tags:
-                return True
-            return False
-        return False
+        """Parses bs4 tags to list of Pair objects"""
+        prepared_tags: list[Pair] = []
+        for tag in tags:
+            prepared_tags.append(
+                Pair.from_tag(
+                    tag,
+                    subgroup_id=self.subgroup_id
+                )
+            )
+        return prepared_tags
 
     def _get_week(self):
         """Iteratively loops trough table to get data for all days"""

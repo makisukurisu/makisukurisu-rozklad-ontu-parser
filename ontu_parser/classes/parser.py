@@ -79,19 +79,37 @@ class Parser(BaseClass):
         schedule_page = self._get_page(
             schedule_response
         )
+
+        breadcrumbs = schedule_page.find(
+            attrs={
+                'class': 'breadcrumbs'
+            }
+        )
+        group_breadcrumbs = breadcrumbs.find_all(
+            attrs={
+                'class': 'page-link'
+            }
+        )
+
         table = schedule_page.find(
             attrs={
                 'class': 'table'
             }
         )
+        group_name = group_breadcrumbs[-1].text
+        # I hate this, but at the same time - I love it
+        # If it ever to become broken I'll implement this a bit thoughtfully :)
+        subgroup_name = group_name.split('[')[1].replace(']', '')
         schedule = Schedule.from_tag(
-            table
+            table,
+            subgroup=subgroup_name
         )
         week = schedule.week
         return week
 
-    def parse(self):
+    def parse(self, all_time=False):
         """Parses information, requiring user input (CLI)"""
+        schedule = None
         all_faculties = self.get_faculties()
 
         for faculty in all_faculties:
@@ -105,7 +123,7 @@ class Parser(BaseClass):
                 break
         else:
             print("Несуществующее имя факльтета!")
-            return
+            return schedule
         groups = self.get_groups(faculty_id)
         for group in groups:
             print(group.get_group_name())
@@ -118,7 +136,7 @@ class Parser(BaseClass):
                 break
         else:
             print("Несуществующее имя группы!")
-            return
+            return schedule
 
-        self.get_schedule(group_id, True)
-        # TO BE CONTINUED...
+        schedule = self.get_schedule(group_id, all_time=all_time)
+        return schedule

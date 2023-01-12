@@ -4,3 +4,5 @@
 Использую мобильную версию.
 На данный момент.
 
+## Honorable Mentions
+* Благодарю [MarshalX](https://github.com/MarshalX) за [разрешение](https://t.me/yandex_music_api/29677) повзаимствовать метод `to_dict` из его библиотеки: [yandex-music-api](https://github.com/MarshalX/yandex-music-api)
