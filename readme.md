@@ -1,10 +1,10 @@
 # Rozklad ONTU Pareser [![linting: pylint](https://img.shields.io/badge/linting-pylint-yellowgreen)](https://github.com/PyCQA/pylint)
-Ця бібліотека (поки що її немає в PyPi) призначена для отримання розкладу з (сайту з розкладом ОНТУ)[https://rozklad.ontu.edu.ua/guest_n.php]
+Ця бібліотека (поки що її немає в PyPi) призначена для отримання розкладу з [сайту з розкладом ОНТУ](https://rozklad.ontu.edu.ua/guest_n.php)
 
 На поточний момент бібліотека може повернути розклад на поточний тиждень, чи на весь семестр. В подальшому планується додати підтримку розкладу екзаменів, повідомлень та інших розділів сайту.
 
 ## А як користуватися?
-Ви можете подивитися приклад використання в файлі (example.py)[https://github.com/makisukurisu/rozklad-ontu-parser/blob/master/ontu_parser/example.py]. Також наразі є окремий метод для отримання розкладу з CLI - parse.
+Ви можете подивитися приклад використання в файлі [example.py](https://github.com/makisukurisu/rozklad-ontu-parser/blob/master/ontu_parser/example.py). Також наразі є окремий метод для отримання розкладу з CLI - parse.
 
 ## І нащо мені той CLI парсер?..
 Насправді лібу можна використовувати не лише як CLI тулзу, але й додавши пакет (якого наразі немає) до вашого проекту, тим самим створивши будь-яку систему з використанням цієї бібліотеки.
