@@ -12,7 +12,7 @@
 Чи мій наступний проект - бот з розкладом для всього вишу.
 
 ## System requirements
-Вам знадобиться Python 3.10+ і будь-який браузер для роботи з selenium (Я використовуб Firefox)
+Вам знадобиться Python 3.10+ і будь-який браузер для роботи з selenium (Я використовую Firefox)
 
 ## Honorable Mentions
 * Дякую [MarshalX](https://github.com/MarshalX) за [дозвіл](https://t.me/yandex_music_api/29677) позичити метод `to_dict` з його ліби: [yandex-music-api](https://github.com/MarshalX/yandex-music-api). (Було внесено мінімальні зміни через bs4 теги)
