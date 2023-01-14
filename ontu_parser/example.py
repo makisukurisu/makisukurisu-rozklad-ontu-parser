@@ -10,6 +10,10 @@ for day_name, pairs in schedule.items():
             continue
         print(f'{pair.pair_no}:')
         for lesson in pair.lessons:
-            print(f'{lesson.lesson_date}: {lesson.teacher["short"]} - {lesson.lesson_name["short"]}')
+            print(
+                f'{lesson.lesson_date}: '
+                f'{lesson.teacher["short"]} - '
+                f'{lesson.lesson_name["short"]}'
+            )
             print(f'Card: {lesson.lesson_info}')
             print()
