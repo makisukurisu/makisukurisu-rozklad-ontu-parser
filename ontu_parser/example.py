@@ -1,5 +1,5 @@
 """Usage example"""
-from classes import Parser
+from ontu_parser.classes import Parser
 
 parser = Parser()
 schedule = parser.parse(all_time=True)

@@ -1,0 +1,23 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "rozklad_ontu_parser_MakisuKurisu"
+version = "0.0.1.5"
+authors = [
+  {  name="Pavlo Pohorieltsev", email="667strets@gmail.com"  },
+]
+description = "Package for parsing data from rozklad.ontu.edu.ua"
+readme = "readme.md"
+requires-python = ">=3.10"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: BSD License",
+    "Operating System :: OS Independent",
+    "Natural Language :: English",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/makisukurisu/rozklad-ontu-parser"
+"Bug Tracker" = "https://github.com/makisukurisu/rozklad-ontu-parser/issues"
