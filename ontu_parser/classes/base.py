@@ -2,6 +2,7 @@
 import keyword
 
 from attrs import define
+from bs4.element import Tag
 
 reserved_names = keyword.kwlist
 
@@ -44,12 +45,15 @@ class BaseClass:
                 return [parse(it) for it in val]
             elif isinstance(val, dict):
                 return {key: parse(value) for key, value in val.items()}
+            elif isinstance(val, Tag):
+                return {val.__class__: val.name}
             else:
                 return val
 
         data = self.__dict__.copy()
-        data.pop('client', None)
-        data.pop('_id_attrs', None)
+        # Removed nonexistent pops
+        # data.pop('client', None)
+        # data.pop('_id_attrs', None)
 
         if for_request:
             for k, v in data.copy().items():
