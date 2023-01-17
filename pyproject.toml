@@ -17,6 +17,10 @@ classifiers = [
     "Operating System :: OS Independent",
     "Natural Language :: English",
 ]
+dynamic = ["dependencies"]
+
+[tool.setuptools.dynamic]
+dependencies = {file = ["requirements.txt"]}
 
 [project.urls]
 "Homepage" = "https://github.com/makisukurisu/rozklad-ontu-parser"
