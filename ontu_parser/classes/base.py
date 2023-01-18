@@ -9,7 +9,11 @@ reserved_names = keyword.kwlist
 
 @define
 class BaseClass:
-    """Provides common base for desc"""
+    """Provides common base for descendants"""
+
+    def __init__(self, *args, **kwargs):
+        """Mock to allow using __init__ with args and kwargs (see Parser class)"""
+
     def get_as_str(self):
         """Returns __dict__ in a string format"""
         return str(self.__dict__)

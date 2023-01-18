@@ -9,7 +9,14 @@ from .sender import Sender
 
 class Parser(BaseClass):
     """Parser class to get information from Rozklad ONTU"""
-    sender: Sender = Sender()
+    sender: Sender = None
+
+    def __init__(self, *args, **kwargs):
+        if isinstance(kwargs, dict) and 'kwargs' in kwargs:
+            # Trick to unwrap kwargs
+            kwargs = kwargs.get('kwargs', {})
+
+        self.sender = Sender(*args, **kwargs)
 
     def _get_page(self, response: Response):
         content = response.content

@@ -81,6 +81,23 @@ class Cookies(TTLValue):
 class NotBot(TTLValue):
     """Describes NotBot value for requests"""
 
+    _browser_kwargs = {}
+
+    @classmethod
+    def create(cls, **browser_settings):
+        """
+            Creates NotBot with certain browser_settings
+            Refer to webdriver.Firefox arguments and docs for more info
+        """
+        if isinstance(browser_settings, dict) and 'browser_settings' in browser_settings:
+            # I'm not sure if this is the right way of multi-passing kwargs :|
+            browser_settings = browser_settings.get('browser_settings', {})
+
+        obj = cls()
+        obj._browser_kwargs = browser_settings
+
+        return obj
+
     @property
     def value(self) -> str:
         """Returns or sets and returns value of 'notbot'"""
@@ -94,7 +111,7 @@ class NotBot(TTLValue):
 
     def get_notbot(self):
         """Gets notbot by making webdriver request (emulates JS)"""
-        driver = webdriver.Firefox()
+        driver = webdriver.Firefox(**self._browser_kwargs)
         driver.get('https://rozklad.ontu.edu.ua/guest_n.php')
         notbot: str | None = None
         while True:
@@ -112,10 +129,12 @@ class NotBot(TTLValue):
 class Sender(BaseClass):
     """Describes sender with link, notbot and cookies to send requests"""
     link: str = 'https://rozklad.ontu.edu.ua/guest_n.php'
-    notbot: NotBot = NotBot()
+    notbot: NotBot = None
     cookies: Cookies = None
 
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
+        notbot_kwargs = kwargs.get('notbot', {})
+        self.notbot = NotBot.create(**notbot_kwargs)
         self.cookies = Cookies(self)
 
     _responses: list[requests.Response] = []

@@ -1,7 +1,23 @@
 """Usage example"""
+# To test Library installed from PyPi, use this import:
+
 from ontu_parser.classes import Parser
 
-parser = Parser()
+# To test Library from source code, use this import:
+
+# from classes import Parser
+
+# An example of how to pass arguments to Firefox browser created by selenium
+# Add arguments inside 'browser_settings' and see what happens
+parser = Parser(
+    kwargs={
+        'notbot': {
+            'browser_settings': {
+            }
+        }
+    }
+)
+
 schedule = parser.parse(all_time=True)
 for day_name, pairs in schedule.items():
     print(f'{day_name}:\n')
