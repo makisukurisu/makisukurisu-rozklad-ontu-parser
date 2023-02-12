@@ -1,7 +1,7 @@
 # Rozklad ONTU Pareser [![linting: pylint](https://img.shields.io/badge/linting-pylint-yellowgreen)](https://github.com/PyCQA/pylint)
-PyPi: https://pypi.org/project/rozklad-ontu-parser-MakisuKurisu/
+Library on [PyPi](https://pypi.org/project/rozklad-ontu-parser-MakisuKurisu/)
 
-Installation: pip install rozklad-ontu-parser-MakisuKurisu
+Installation: `pip install rozklad-ontu-parser-MakisuKurisu`
 
 Ця бібліотека (поки що її немає в PyPi) призначена для отримання розкладу з [сайту з розкладом ОНТУ](https://rozklad.ontu.edu.ua/guest_n.php)
 
