@@ -56,7 +56,7 @@ class Cookies(TTLValue):
 
         cookie = self.get_cookie()
         if not cookie:
-            raise RuntimeError("Could not get cookies") 
+            raise RuntimeError("Could not get cookies")
         return cookie
 
     def get_cookie(self):
