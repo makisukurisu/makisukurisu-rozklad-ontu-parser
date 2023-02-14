@@ -112,10 +112,10 @@ class NotBot(TTLValue):
 
     def get_notbot(self):
         """Gets notbot by making webdriver request (emulates JS)"""
-        if options := self._browser_kwargs.pop('options', None):
-            if not options:
-                options = FirefoxOptions()
-                options.add_argument("--headless")
+        options = self._browser_kwargs.pop('options', None)
+        if not options:
+            options = FirefoxOptions()
+            options.add_argument("--headless")
         driver = webdriver.Firefox(options=options, **self._browser_kwargs)
         driver.get('https://rozklad.ontu.edu.ua/guest_n.php')
         notbot: str | None = None
