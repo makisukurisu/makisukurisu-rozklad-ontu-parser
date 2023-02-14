@@ -2,6 +2,7 @@
 from datetime import datetime
 import requests
 from selenium import webdriver
+from selenium.webdriver import FirefoxOptions
 
 from .base import BaseClass
 
@@ -111,7 +112,11 @@ class NotBot(TTLValue):
 
     def get_notbot(self):
         """Gets notbot by making webdriver request (emulates JS)"""
-        driver = webdriver.Firefox(**self._browser_kwargs)
+        if options := self._browser_kwargs.pop('options', None):
+            if not options:
+                options = FirefoxOptions()
+                options.add_argument("--headless")
+        driver = webdriver.Firefox(options=options, **self._browser_kwargs)
         driver.get('https://rozklad.ontu.edu.ua/guest_n.php')
         notbot: str | None = None
         while True:
