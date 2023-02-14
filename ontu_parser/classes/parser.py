@@ -21,7 +21,10 @@ class Parser(BaseClass):
     def _get_page(self, response: Response):
         content = response.content
         if not content:
-            raise Exception(f'Response: {response} has no content!')
+            raise ValueError(
+                f'Response: {response} has no content!',
+                response
+            )
         decoded_content = content.decode('utf-8')
         return BeautifulSoup(decoded_content, 'html.parser')
 

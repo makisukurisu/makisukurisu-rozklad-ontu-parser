@@ -56,7 +56,7 @@ class Cookies(TTLValue):
 
         cookie = self.get_cookie()
         if not cookie:
-            raise Exception("Could not get cookies")
+            raise RuntimeError("Could not get cookies") 
         return cookie
 
     def get_cookie(self):
@@ -106,7 +106,7 @@ class NotBot(TTLValue):
 
         notbot = self.get_notbot()
         if not notbot:
-            raise Exception("Could not get notbot")
+            raise RuntimeError("Could not get notbot")
         return notbot
 
     def get_notbot(self):
@@ -156,11 +156,13 @@ class Sender(BaseClass):
                 data=data
             )
         except Exception as exception:
-            raise Exception(
-                f'could not get response from {self.link}, got exception: {exception}'
+            raise ValueError(
+                f'could not get response from {self.link}, got exception: {exception}',
+                self.link,
+                exception
             ) from exception
         if response.status_code != RequestsEnum.Codes.OK:
-            raise Exception(
+            raise ValueError(
                 'server returned non OK response',
                 response.status_code,
                 response,

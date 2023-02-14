@@ -14,7 +14,7 @@ class CheckTagMixin:
     @staticmethod
     def _check_tag(tag: Tag):
         """Checks if tag is valid for usage"""
-        raise Exception("`_check_tag` Not implemented")
+        raise NotImplementedError("`_check_tag` Not implemented")
 
 
 class BaseTag(BaseClass, CheckTagMixin):
@@ -22,7 +22,7 @@ class BaseTag(BaseClass, CheckTagMixin):
     @classmethod
     def from_tag(cls, tag):
         """Checks tag and returns initialized object"""
-        raise Exception("`from_tag` Not implemented")
+        raise NotImplementedError("`from_tag` Not implemented")
 
 
 @define
@@ -36,14 +36,21 @@ class Faculty(BaseTag):
         span = getattr(tag, 'span', None)
         required_properties = [attrs, span]
         if not all(required_properties):
-            raise Exception(f"Invalid tag: {tag}, has no attrs")
+            raise ValueError(f"Invalid tag: {tag}, has no attrs", tag)
         required = ['data-id']
         for requirement in required:
             if requirement not in attrs:
-                raise Exception(f"Invalid tag: {tag}, doesn't have attrs: {required}")
+                raise ValueError(
+                    f"Invalid tag: {tag}, doesn't have attrs: {required}",
+                    tag,
+                    required
+                )
         span_string = getattr(span, 'string', None)
         if span_string is None:
-            raise Exception(f"Invalid tag: {tag}, `span` has no string")
+            raise ValueError(
+                f"Invalid tag: {tag}, `span` has no string",
+                tag
+            )
 
     @classmethod
     def from_tag(cls, tag):
@@ -78,7 +85,11 @@ class Group(BaseTag):
         required = ['data-id']
         for requirement in required:
             if requirement not in attrs:
-                raise Exception(f"Invalid tag: {tag}, doesn't have attrs: {required}")
+                raise ValueError(
+                    f"Invalid tag: {tag}, doesn't have attrs: {required}",
+                    tag,
+                    required
+                )
 
         # Children requiremenets
 
@@ -90,7 +101,10 @@ class Group(BaseTag):
         )
         required = [icon, text]
         if not all(required):
-            raise Exception(f"Invalid tag: {tag} doesn't have suitable children")
+            raise ValueError(
+                f"Invalid tag: {tag} doesn't have suitable children",
+                tag
+            )
 
     @classmethod
     def from_tag(cls, tag):
@@ -156,7 +170,7 @@ class BaseLesson(BaseTag):
 
     def parse_tag(self):
         """This method parses bs4 and stores data from it in object's fields"""
-        raise Exception(
+        raise NotImplementedError(
             "`parse_tag` was not implemented\n"
             "You are probably executing this from BaseLesson\n"
             "Please use one of derived classes"
@@ -362,7 +376,10 @@ class Schedule(BaseTag):
     @staticmethod
     def _check_tag(tag):
         if tag.name != 'table':
-            raise Exception(f"Invalid tag: {tag}. Should be table")
+            raise ValueError(
+                f"Invalid tag: {tag}. Should be table",
+                tag
+            )
 
     @classmethod
     def from_tag(cls, tag, subgroup=None):
