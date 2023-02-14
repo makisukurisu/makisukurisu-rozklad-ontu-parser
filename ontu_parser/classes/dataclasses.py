@@ -218,12 +218,13 @@ class RegularLesson(BaseLesson):
 
     def parse_tag(self):
         lesson = self.lesson_tag
-        predm = lesson.nextSibling
+        # I don't know why, but ok :)
+        skip = lesson.nextSibling
         self.lesson_name = {
-            'short': predm.text,
-            'full': predm.attrs.get('title', "Not Set")
+            'short': lesson.text,
+            'full': lesson.attrs.get('title', "Not Set")
         }
-        prp = predm.nextSibling
+        prp = skip.nextSibling
         if isinstance(prp, str):
             # <br> may be interpreted as '\n'
             prp = prp.nextSibling
