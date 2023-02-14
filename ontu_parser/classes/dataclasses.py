@@ -369,8 +369,7 @@ class Schedule(BaseTag):
     @property
     def week(self):
         """Gets data for this week"""
-        if not self._schedule_data:
-            self._get_week()
+        self._get_week()
         return self._schedule_data
 
     @staticmethod
