@@ -64,6 +64,7 @@ class Cookies(TTLValue):
         if self._value and self.is_valid():
             return self._value
 
+        print("Cookies are being updated")
         cookie = self.get_cookie()
         if not cookie:
             raise RuntimeError("Could not get cookies")
@@ -71,7 +72,6 @@ class Cookies(TTLValue):
 
     def get_cookie(self):
         """Get's cookie value and notbot (used to verify that request is made by human)"""
-        print("Cookies are being updated")
         link = self.sender.link
         notbot = self.sender.notbot.value
 
@@ -85,8 +85,7 @@ class Cookies(TTLValue):
         key = 'PHPSESSID'
         cookie = response.cookies.get(key)
 
-        self._value = {key: cookie, 'notbot': notbot}
-        return self._value
+        return self.set_value({key: cookie, 'notbot': notbot})
 
 
 class NotBot(TTLValue):
@@ -115,6 +114,7 @@ class NotBot(TTLValue):
         if self._value and self.is_valid():
             return self._value
 
+        print("Notbot is being updated")
         notbot = self.get_notbot()
         if not notbot:
             raise RuntimeError("Could not get notbot")
@@ -122,7 +122,6 @@ class NotBot(TTLValue):
 
     def get_notbot(self):
         """Gets notbot by making webdriver request (emulates JS)"""
-        print("Notbot is being updated")
         options = self._browser_kwargs.pop('options', None)
         if not options:
             options = FirefoxOptions()
