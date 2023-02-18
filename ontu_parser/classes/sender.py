@@ -25,14 +25,22 @@ class RequestsEnum:
 
 class TTLValue(BaseClass):
     """Describes value with some time to live (like authorization token)"""
-    _ttl: int = 3600
+    _ttl: int = 1800  # Time To Live (in seconds)
     _value: object = None
 
     issued_at: datetime = datetime.min
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.issued_at = datetime.now()
+
     def is_valid(self):
-        """Checks wether value is still valid (compares ttl to current time)"""
-        if (datetime.now() - self.issued_at).seconds > self._ttl:
+        """
+            Checks wether value is still valid
+                True if TTLValue was issued less seconds before than Time To Live
+        """
+        seconds_passed = (datetime.now() - self.issued_at).seconds
+        if seconds_passed < self._ttl:
             return True
         return False
 
@@ -46,7 +54,8 @@ class TTLValue(BaseClass):
 class Cookies(TTLValue):
     """Describes cookies (Temporary values) for requests"""
 
-    def __init__(self, sender):
+    def __init__(self, sender, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.sender: Sender = sender
 
     @property
@@ -62,6 +71,7 @@ class Cookies(TTLValue):
 
     def get_cookie(self):
         """Get's cookie value and notbot (used to verify that request is made by human)"""
+        print("Cookies are being updated")
         link = self.sender.link
         notbot = self.sender.notbot.value
 
@@ -112,6 +122,7 @@ class NotBot(TTLValue):
 
     def get_notbot(self):
         """Gets notbot by making webdriver request (emulates JS)"""
+        print("Notbot is being updated")
         options = self._browser_kwargs.pop('options', None)
         if not options:
             options = FirefoxOptions()

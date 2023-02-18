@@ -9,20 +9,17 @@ from bs4.element import Tag
 from .base import BaseClass
 
 
-class CheckTagMixin:
-    """Mixin for _check_tag method"""
-    @staticmethod
-    def _check_tag(tag: Tag):
-        """Checks if tag is valid for usage"""
-        raise NotImplementedError("`_check_tag` Not implemented")
-
-
-class BaseTag(BaseClass, CheckTagMixin):
+class BaseTag(BaseClass):
     """Base Tag Class for parsing BS4 tags from responses"""
     @classmethod
     def from_tag(cls, tag):
         """Checks tag and returns initialized object"""
         raise NotImplementedError("`from_tag` Not implemented")
+
+    @staticmethod
+    def _check_tag(tag: Tag):
+        """Checks if tag is valid for usage"""
+        raise NotImplementedError("`_check_tag` Not implemented")
 
 
 @define
