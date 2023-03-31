@@ -3,7 +3,7 @@ Library on [PyPi](https://pypi.org/project/rozklad-ontu-parser-MakisuKurisu/)
 
 Installation: `pip install rozklad-ontu-parser-MakisuKurisu`
 
-Ця бібліотека (поки що її немає в PyPi) призначена для отримання розкладу з [сайту з розкладом ОНТУ](https://rozklad.ontu.edu.ua/guest_n.php)
+Ця бібліотека призначена для отримання розкладу з [сайту з розкладом ОНТУ](https://rozklad.ontu.edu.ua/guest_n.php)
 
 На поточний момент бібліотека може повернути розклад на поточний тиждень, чи на весь семестр. В подальшому планується додати підтримку розкладу екзаменів, повідомлень та інших розділів сайту.
 
