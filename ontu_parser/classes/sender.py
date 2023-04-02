@@ -5,23 +5,7 @@ from selenium import webdriver
 from selenium.webdriver import FirefoxOptions
 
 from .base import BaseClass
-
-
-class RequestsEnum:
-    """Contains information for Requests library"""
-    class Methods:
-        """Conains used HTTP Methods for requests"""
-        GET = 'GET'
-        POST = 'POST'
-
-        CHOICES = [
-            GET, POST
-        ]
-
-    class Codes:
-        """Contains used HTTP response codes"""
-        OK = 200
-
+from .enums import RequestsEnum
 
 class TTLValue(BaseClass):
     """Describes value with some time to live (like authorization token)"""
@@ -157,9 +141,9 @@ class Sender(BaseClass):
     def send_request(self, method: str, data: (dict | None) = None):
         """Sends request with method and some data, if needed"""
         session = requests.Session()
-        if method not in RequestsEnum.Methods.CHOICES:
+        if method not in RequestsEnum.Methods.CHOICES.value:
             raise ValueError(
-                f'arg. `method` should be one of: {RequestsEnum.Methods.CHOICES}',
+                f'arg. `method` should be one of: {RequestsEnum.Methods.CHOICES.value}',
                 method,
             )
 
@@ -176,7 +160,7 @@ class Sender(BaseClass):
                 self.link,
                 exception
             ) from exception
-        if response.status_code != RequestsEnum.Codes.OK:
+        if response.status_code != RequestsEnum.code_ok():
             raise ValueError(
                 'server returned non OK response',
                 response.status_code,

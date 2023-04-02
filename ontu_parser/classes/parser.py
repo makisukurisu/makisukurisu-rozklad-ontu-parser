@@ -3,6 +3,7 @@ from requests import Response
 from bs4 import BeautifulSoup
 
 from .base import BaseClass
+from .enums import RequestsEnum
 from .dataclasses import Faculty, Group, Schedule
 from .sender import Sender
 
@@ -31,7 +32,7 @@ class Parser(BaseClass):
     def get_faculties(self) -> list[Faculty]:
         """Returns a list of faculties as Faculty objects"""
         faculties_response = self.sender.send_request(
-            method='GET'  # No data gives 'main' page with faculties
+            method=RequestsEnum.method_get()  # No data gives 'main' page with faculties
         )
         faculty_page = self._get_page(faculties_response)
         faculty_tags = faculty_page.find_all(
@@ -51,7 +52,7 @@ class Parser(BaseClass):
     def get_groups(self, faculty_id) -> list[Group]:
         """Returns Group list of a faculty by faculty id"""
         groups_response = self.sender.send_request(
-            method='POST',
+            method=RequestsEnum.method_post(),
             data={
                 'facultyid': faculty_id
             }
@@ -83,7 +84,7 @@ class Parser(BaseClass):
         if all_time:
             request_data['show_all'] = 1
         schedule_response = self.sender.send_request(
-            method='POST',
+            method=RequestsEnum.method_post(),
             data=request_data
         )
         schedule_page = self._get_page(

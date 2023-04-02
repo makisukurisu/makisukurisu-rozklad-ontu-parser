@@ -318,8 +318,9 @@ class Pair(BaseTag):
     @staticmethod
     def get_lessons(pair: Tag):
         """Parses lessons for this pair"""
-        # All dates have this class
+        # All time 'days' have <span>s with dates in them
         all_dates = pair.find_all(
+            name='span',
             attrs={
                 'class': 'fg-blue'
             }
