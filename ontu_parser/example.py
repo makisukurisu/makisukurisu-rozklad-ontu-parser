@@ -30,6 +30,6 @@ for day_name, pairs in schedule.items():
                 f'{lesson.lesson_date}: '
                 f'{lesson.teacher["short"]} - '
                 f'{lesson.lesson_name["short"]}'
+                f' - In auditorium: {lesson.auditorium}' if lesson.auditorium else ''
             )
-            print(f'Card: {lesson.lesson_info}')
-            print()
+            print(f'Card: {lesson.lesson_info}\n')

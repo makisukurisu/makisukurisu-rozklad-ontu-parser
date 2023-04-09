@@ -159,6 +159,7 @@ class BaseLesson(BaseTag):
     teacher: dict = {}
     lesson_name: dict = {}
     lesson_info: str = ""
+    auditorium: str | None = None
 
     @staticmethod
     def _check_tag(tag: Tag):
@@ -174,47 +175,6 @@ class BaseLesson(BaseTag):
         )
 
 
-class AllTimeLesson(BaseLesson):
-    """
-        This class should be used to parse lesson from bs4 tag
-        If you are getting schedule for all time
-    """
-    @classmethod
-    def from_tag(cls, tag):
-        obj = cls()
-        obj.lesson_tag = tag
-        obj.parse_tag()
-        return obj
-
-    def parse_tag(self):
-        lesson = self.lesson_tag
-        self.lesson_date = lesson.text
-        predm = lesson.nextSibling
-        self.lesson_name = {
-            'short': predm.text,
-            'full': predm.attrs.get('title', "Not Set")
-        }
-        prp = predm.nextSibling
-        if isinstance(prp, str):
-            # <br> may be interpreted as '\n'
-            prp = prp.nextSibling
-        self.teacher = {
-            'short': prp.text.replace('\xa0', ' '),  # Why...
-            'full': prp.attrs.get('title', "Not Set")
-        }
-        card = prp.nextSibling
-        if isinstance(card, str):
-            # <br> may be interpreted as '\n'
-            card = card.nextSibling
-        card_content: Tag = card.find(
-            attrs={
-                'class': 'card-content'
-            }
-        )
-        if card_content:
-            self.lesson_info = card_content.text.replace('\t', '')
-
-
 class RegularLesson(BaseLesson):
     """
         This class should be used to parse lesson from bs4 tag
@@ -228,32 +188,57 @@ class RegularLesson(BaseLesson):
         return obj
 
     def parse_tag(self):
-        lesson = self.lesson_tag
-        # I don't know why, but ok :)
-        skip = lesson.nextSibling
-        self.lesson_name = {
-            'short': lesson.text,
-            'full': lesson.attrs.get('title', "Not Set")
-        }
-        prp = skip.nextSibling
-        if isinstance(prp, str):
-            # <br> may be interpreted as '\n'
-            prp = prp.nextSibling
-        self.teacher = {
-            'short': prp.text.replace('\xa0', ' '),  # Why...
-            'full': prp.attrs.get('title', "Not Set")
-        }
-        card = prp.nextSibling
-        if isinstance(card, str):
-            # <br> may be interpreted as '\n'
-            card = card.nextSibling
-        card_content: Tag = card.find(
+        lesson_top = self.lesson_tag.parent
+
+        predm_element = lesson_top.find(
+            name='span',
             attrs={
-                'class': 'card-content'
+                'class': 'predm'
             }
         )
-        if card_content:
-            self.lesson_info = card_content.text.replace('\t', '')
+        self.lesson_name = {
+            'short': predm_element.text,
+            'full': predm_element.attrs.get('title', "Not Set")
+        }
+
+        prp_element = lesson_top.find(
+            name='span',
+            attrs={
+                'class': 'prp'
+            }
+        )
+        self.teacher = {
+            'short': prp_element.text.replace('\xa0', ' '),  # Why...
+            'full': prp_element.attrs.get('title', "Not Set")
+        }
+
+        # Card tag consists of two children
+        # First states type of content
+        # Other - content itself
+        card_tag = lesson_top.find(
+            name='div',
+            attrs={
+                'class': 'card'
+            }
+        )
+        if card_tag:
+            card_content = card_tag.find(
+                name='div',
+                attrs={
+                    'class': 'card-content'
+                }
+            )
+            if card_content:
+                self.lesson_info = card_content.text.replace('\t', '').strip()
+
+        auditorium_tag = lesson_top.find(
+            name='a',
+            attrs={
+                'class': 'fg-blue'
+            }
+        )
+        if auditorium_tag:
+            self.auditorium = auditorium_tag.text
 
 
 class Pair(BaseTag):
@@ -337,9 +322,10 @@ class Pair(BaseTag):
             return lessons
         if len(all_dates) > 0:
             # This means we are dealing with 'all time' records
+            # Which have multiple lessons per pair
             for lesson in all_dates:
                 lessons.append(
-                    AllTimeLesson.from_tag(
+                    RegularLesson.from_tag(
                         lesson
                     )
                 )
