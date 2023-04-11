@@ -1,4 +1,5 @@
 """Module for sending operations"""
+import time
 from datetime import datetime
 import requests
 from selenium import webdriver
@@ -59,17 +60,36 @@ class Cookies(TTLValue):
         link = self.sender.link
         notbot = self.sender.notbot.value
 
-        response = requests.get(
-            link,
-            cookies={
-                'notbot': notbot
-            },
-            timeout=30
-        )
-        key = 'PHPSESSID'
-        cookie = response.cookies.get(key)
+        php_key = 'PHPSESSID'
 
-        return self.set_value({key: cookie, 'notbot': notbot})
+        i = 0
+        phpsessid = notbot.get(php_key, None)
+        while True:
+            if phpsessid:
+                break
+
+            print("Making request to get PHPSESSID and pow-result")
+            response = requests.get(
+                link,
+                cookies=notbot,
+                timeout=30
+            )
+            phpsessid = response.cookies.get(php_key) or phpsessid
+            if not phpsessid:
+                print(f"Sleeping for {2 ** i} seconds")
+                time.sleep(2 ** i)
+                i += 1
+            else:
+                break
+
+        new_cookies = notbot.copy()
+        if not new_cookies.get(php_key, None):
+            new_cookies.update(
+                {php_key: phpsessid}
+            )
+        return self.set_value(
+            new_cookies
+        )
 
 
 class NotBot(TTLValue):
@@ -93,8 +113,8 @@ class NotBot(TTLValue):
         return obj
 
     @property
-    def value(self) -> str:
-        """Returns or sets and returns value of 'notbot'"""
+    def value(self) -> dict:
+        """Returns or sets and returns value of {'notbot', 'pow-result'} cookies"""
         if self._value and self.is_valid():
             return self._value
 
@@ -104,6 +124,25 @@ class NotBot(TTLValue):
             raise RuntimeError("Could not get notbot")
         return notbot
 
+    def __make_request(
+            self,
+            driver: webdriver.Firefox) -> tuple[str | None, str | None]:
+        """Returns notbot and pow-result (also PHPSESSID) cookies value"""
+        driver.get('https://rozklad.ontu.edu.ua/guest_n.php')
+        notbot: str | None = None
+        pow_result: str | None = None
+        phpsesid: str | None = None
+        cookies = driver.get_cookies()
+        if cookies:
+            for cookie in cookies:
+                if cookie['name'] == 'notbot':
+                    notbot = cookie['value']
+                if cookie['name'] == 'pow-result':
+                    pow_result = cookie['value']
+                if cookie['name'] == 'PHPSESSID':
+                    phpsesid = cookie['value']
+        return (notbot, pow_result, phpsesid)
+
     def get_notbot(self):
         """Gets notbot by making webdriver request (emulates JS)"""
         options = self._browser_kwargs.pop('options', None)
@@ -111,18 +150,27 @@ class NotBot(TTLValue):
             options = FirefoxOptions()
             options.add_argument("--headless")
         driver = webdriver.Firefox(options=options, **self._browser_kwargs)
-        driver.get('https://rozklad.ontu.edu.ua/guest_n.php')
-        notbot: str | None = None
+        i = 0
         while True:
-            if notbot:
+            print("Making request to get cookies")
+            notbot, pow_result, phpsesid = self.__make_request(
+                driver=driver
+            )
+            if all([notbot, pow_result]):
                 break
-            cookies = driver.get_cookies()
-            if cookies:
-                for cookie in cookies:
-                    if cookie['name'] == 'notbot':
-                        notbot = cookie['value']
+
+            print(f"Sleeping for {2 ** i} seconds")
+            time.sleep(2 ** i)
+            i += 1
+
         driver.close()
-        return self.set_value(notbot)
+        return self.set_value(
+            {
+                "notbot": notbot,
+                "pow-result": pow_result,
+                "PHPSESSID": phpsesid
+            }
+        )
 
 
 class Sender(BaseClass):
@@ -167,7 +215,7 @@ class Sender(BaseClass):
                 response,
                 response.content
             )
-        # Keep resonses for a little while
+        # Keep responses for a little while
         self._responses.append(response)
         self._responses = self._responses[-5:]
 
