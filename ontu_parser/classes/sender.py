@@ -76,6 +76,8 @@ class Cookies(TTLValue):
             )
             phpsessid = response.cookies.get(php_key) or phpsessid
             if not phpsessid:
+                if i > 6:
+                    break
                 print(f"Sleeping for {2 ** i} seconds")
                 time.sleep(2 ** i)
                 i += 1
