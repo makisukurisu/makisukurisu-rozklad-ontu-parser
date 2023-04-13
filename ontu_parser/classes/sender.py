@@ -10,7 +10,7 @@ from .enums import RequestsEnum
 
 class TTLValue(BaseClass):
     """Describes value with some time to live (like authorization token)"""
-    _ttl: int = 1800  # Time To Live (in seconds)
+    _ttl: int = 3600  # Time To Live (in seconds)
     _value: object = None
 
     issued_at: datetime = datetime.min
