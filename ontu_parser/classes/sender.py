@@ -57,40 +57,40 @@ class Cookies(TTLValue):
 
     def get_cookie(self):
         """Get's cookie value and notbot (used to verify that request is made by human)"""
-        link = self.sender.link
+        # link = self.sender.link
         notbot = self.sender.notbot.value
 
-        php_key = 'PHPSESSID'
+        # php_key = 'PHPSESSID'
 
-        i = 0
-        phpsessid = notbot.get(php_key, None)
-        while True:
-            if phpsessid:
-                break
+        # i = 0
+        # phpsessid = notbot.get(php_key, None)
+        # while True:
+        #     if phpsessid:
+        #         break
 
-            print("Making request to get PHPSESSID and pow-result")
-            response = requests.get(
-                link,
-                cookies=notbot,
-                timeout=30
-            )
-            phpsessid = response.cookies.get(php_key) or phpsessid
-            if not phpsessid:
-                if i > 6:
-                    break
-                print(f"Sleeping for {2 ** i} seconds")
-                time.sleep(2 ** i)
-                i += 1
-            else:
-                break
+        #     print("Making request to get PHPSESSID and pow-result")
+        #     response = requests.get(
+        #         link,
+        #         cookies=notbot,
+        #         timeout=30
+        #     )
+        #     phpsessid = response.cookies.get(php_key) or phpsessid
+        #     if not phpsessid:
+        #         if i > 6:
+        #             break
+        #         print(f"Sleeping for {2 ** i} seconds")
+        #         time.sleep(2 ** i)
+        #         i += 1
+        #     else:
+        #         break
 
-        new_cookies = notbot.copy()
-        if not new_cookies.get(php_key, None):
-            new_cookies.update(
-                {php_key: phpsessid}
-            )
+        # new_cookies = notbot.copy()
+        # if not new_cookies.get(php_key, None):
+        #     new_cookies.update(
+        #         {php_key: phpsessid}
+        #     )
         return self.set_value(
-            new_cookies
+            notbot
         )
 
 
@@ -158,11 +158,11 @@ class NotBot(TTLValue):
             notbot, pow_result, phpsesid = self.__make_request(
                 driver=driver
             )
-            if all([notbot, pow_result]):
+            if all([notbot, pow_result, phpsesid]):
                 break
 
-            print(f"Sleeping for {2 ** i} seconds")
-            time.sleep(2 ** i)
+            print(f"Sleeping for {i ** 2} seconds")
+            time.sleep(i ** 2)
             i += 1
 
         driver.close()
