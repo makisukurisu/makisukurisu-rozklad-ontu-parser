@@ -188,7 +188,11 @@ class Sender(BaseClass):
                 method=method,
                 url=self.link,
                 cookies=self.cookies.value,
-                data=data
+                data=data,
+                proxies={
+                    "http": "http://127.0.0.1:8888",
+                    "https": "http://127.0.0.1:8888",
+                }
             )
         except Exception as exception:
             raise ValueError(
