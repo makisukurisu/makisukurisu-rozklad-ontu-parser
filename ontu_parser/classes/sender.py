@@ -4,6 +4,7 @@ from datetime import datetime
 import requests
 from selenium import webdriver
 from selenium.webdriver import FirefoxOptions
+from selenium.webdriver.common.proxy import Proxy, ProxyType
 
 from .base import BaseClass
 from .enums import RequestsEnum
@@ -60,35 +61,6 @@ class Cookies(TTLValue):
         # link = self.sender.link
         notbot = self.sender.notbot.value
 
-        # php_key = 'PHPSESSID'
-
-        # i = 0
-        # phpsessid = notbot.get(php_key, None)
-        # while True:
-        #     if phpsessid:
-        #         break
-
-        #     print("Making request to get PHPSESSID and pow-result")
-        #     response = requests.get(
-        #         link,
-        #         cookies=notbot,
-        #         timeout=30
-        #     )
-        #     phpsessid = response.cookies.get(php_key) or phpsessid
-        #     if not phpsessid:
-        #         if i > 6:
-        #             break
-        #         print(f"Sleeping for {2 ** i} seconds")
-        #         time.sleep(2 ** i)
-        #         i += 1
-        #     else:
-        #         break
-
-        # new_cookies = notbot.copy()
-        # if not new_cookies.get(php_key, None):
-        #     new_cookies.update(
-        #         {php_key: phpsessid}
-        #     )
         return self.set_value(
             notbot
         )
@@ -148,10 +120,24 @@ class NotBot(TTLValue):
     def get_notbot(self):
         """Gets notbot by making webdriver request (emulates JS)"""
         options = self._browser_kwargs.pop('options', None)
+        desired_capabilities = self._browser_kwargs.pop('desired_capabilities', None)
         if not options:
             options = FirefoxOptions()
             options.add_argument("--headless")
-        driver = webdriver.Firefox(options=options, **self._browser_kwargs)
+        if not desired_capabilities:
+            print("Using local proxy at port 8888 (if available)")
+            proxy = Proxy()
+            proxy.proxy_type = ProxyType.MANUAL
+            proxy.http_proxy = "127.0.0.1:8888"
+            proxy.ssl_proxy = "127.0.0.1:8888"
+            desired_capabilities = webdriver.DesiredCapabilities.FIREFOX
+            proxy.add_to_capabilities(desired_capabilities)
+
+        driver = webdriver.Firefox(
+            options=options,
+            desired_capabilities=desired_capabilities,
+            **self._browser_kwargs
+        )
         i = 0
         while True:
             print("Making request to get cookies")
