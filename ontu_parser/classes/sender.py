@@ -120,22 +120,22 @@ class NotBot(TTLValue):
     def get_notbot(self):
         """Gets notbot by making webdriver request (emulates JS)"""
         options = self._browser_kwargs.pop('options', None)
-        desired_capabilities = self._browser_kwargs.pop('desired_capabilities', None)
+        # desired_capabilities = self._browser_kwargs.pop('desired_capabilities', None)
         if not options:
             options = FirefoxOptions()
             options.add_argument("--headless")
-        if not desired_capabilities:
-            print("Using local proxy at port 8888 (if available)")
-            proxy = Proxy()
-            proxy.proxy_type = ProxyType.MANUAL
-            proxy.http_proxy = "127.0.0.1:8888"
-            proxy.ssl_proxy = "127.0.0.1:8888"
-            desired_capabilities = webdriver.DesiredCapabilities.FIREFOX
-            proxy.add_to_capabilities(desired_capabilities)
+        # if not desired_capabilities:
+        #     print("Using local proxy at port 8888 (if available)")
+        #     proxy = Proxy()
+        #     proxy.proxy_type = ProxyType.MANUAL
+        #     proxy.http_proxy = "127.0.0.1:8888"
+        #     proxy.ssl_proxy = "127.0.0.1:8888"
+        #     desired_capabilities = webdriver.DesiredCapabilities.FIREFOX
+        #     proxy.add_to_capabilities(desired_capabilities)
 
         driver = webdriver.Firefox(
             options=options,
-            desired_capabilities=desired_capabilities,
+            # desired_capabilities=desired_capabilities,
             **self._browser_kwargs
         )
         i = 0
@@ -189,10 +189,10 @@ class Sender(BaseClass):
                 url=self.link,
                 cookies=self.cookies.value,
                 data=data,
-                proxies={
-                    "http": "http://127.0.0.1:8888",
-                    "https": "http://127.0.0.1:8888",
-                }
+                # proxies={
+                #    "http": "http://127.0.0.1:8888",
+                #    "https": "http://127.0.0.1:8888",
+                # }
             )
         except Exception as exception:
             raise ValueError(
