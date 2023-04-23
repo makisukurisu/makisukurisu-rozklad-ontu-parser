@@ -191,8 +191,6 @@ class Sender(BaseClass):
                 }
             )
         except Exception as exception:
-            import traceback
-            traceback.print_exc()
             raise ValueError(
                 f'could not get response from {self.link}, got exception: {exception}',
                 self.link,
