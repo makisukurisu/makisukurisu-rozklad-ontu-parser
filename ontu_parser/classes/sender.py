@@ -174,13 +174,25 @@ class Sender(BaseClass):
             )
 
         try:
+            # Just in case, I guess
+            for item, key in self.cookies.value.items():
+                session.cookies.set(
+                    item,
+                    key,
+                    path='/'
+                )
             response: requests.Response = session.request(
                 method=method,
                 url=self.link,
-                cookies=self.cookies.value,
                 data=data,
+                headers={
+                    # They are really getting on my nerves at this point TBH
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+                }
             )
         except Exception as exception:
+            import traceback
+            traceback.print_exc()
             raise ValueError(
                 f'could not get response from {self.link}, got exception: {exception}',
                 self.link,
