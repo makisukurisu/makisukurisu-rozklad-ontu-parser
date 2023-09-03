@@ -4,17 +4,18 @@ from enum import Enum
 
 class RequestsEnum:
     """Contains information for Requests library"""
+
     class Methods(Enum):
         """Contains used HTTP Methods for requests"""
-        GET = 'GET'
-        POST = 'POST'
 
-        CHOICES = [
-            GET, POST
-        ]
+        GET = "GET"
+        POST = "POST"
+
+        CHOICES = [GET, POST]
 
     class Codes(Enum):
         """Contains used HTTP response codes"""
+
         OK = 200
 
     @classmethod
