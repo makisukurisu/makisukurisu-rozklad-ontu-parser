@@ -568,7 +568,7 @@ class Department(BaseTag):
         full_name = full_name_span.text.strip() if full_name_span else ""
         name["full"] = full_name
         if full_name:
-            name["full"] = " ".join([x.capitalize() if len(x) > 2 else x for x in full_name])
+            name["full"] = " ".join([x.capitalize() if len(x) > 2 else x for x in full_name.split()])
         return name
 
 
@@ -633,5 +633,5 @@ class Teacher(BaseTag):
         full_name = full_name_span.text.strip() if full_name_span else ""
         name["full"] = full_name
         if full_name:
-            name["full"] = " ".join([x.capitalize() if len(x) > 2 else x for x in full_name])
+            name["full"] = " ".join([x.capitalize() if len(x) > 2 else x for x in full_name.split()])
         return name
