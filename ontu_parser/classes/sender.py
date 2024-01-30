@@ -69,7 +69,9 @@ class Cookies(TTLValue):
 class NotBot(TTLValue):
     """Describes NotBot value for requests"""
 
-    _browser_kwargs = {}
+    def __init__(self, *args, **kwargs):
+        self._browser_kwargs = {}
+        super().__init__(*args, **kwargs)
 
     @classmethod
     def create(cls, **browser_settings):

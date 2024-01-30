@@ -145,10 +145,13 @@ class BaseStudentsLesson(BaseTag):
     lesson_tag: Tag
 
     lesson_date: str = ""
-    teacher: dict = {}
-    lesson_name: dict = {}
     lesson_info: str = ""
     auditorium: str | None = None
+
+    def __init__(self, *args, **kwargs):
+        self.teacher: dict = {}
+        self.lesson_name: dict = {}
+        super().__init__(*args, **kwargs)
 
     @staticmethod
     def _check_tag(tag: Tag):
@@ -214,10 +217,13 @@ class StudentsPair(BaseTag):
     """
 
     pair_tag: Tag
-    lessons: list[BaseStudentsLesson] = []
 
     pair_no: int = None
     _subgroup_id: int = 0
+
+    def __init__(self, *args, **kwargs):
+        self.lessons: list[BaseStudentsLesson] = []
+        super().__init__(*args, **kwargs)
 
     @staticmethod
     def _check_tag(tag: Tag):
@@ -283,7 +289,10 @@ class BaseSchedule(BaseTag):
     """Describes schedule from BS4 tag"""
 
     schedule_tag: Tag
-    _schedule_data: dict[str, list["StudentsPair | TeachersPair"]] = {}
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._schedule_data: dict[str, list["StudentsPair | TeachersPair"]] = {}
 
     @property
     def week(self):
@@ -298,11 +307,14 @@ class BaseSchedule(BaseTag):
 class StudentsSchedule(BaseSchedule):
     """Describes schedule from HTML table"""
 
-    subgroups: list[str] = []
     subgroup_id: int = 0
     _subgroup: str = ""
 
     _splitter_class: str = "bg-darkCyan"
+
+    def __init__(self, *args, **kwargs):
+        self.subgroups: list[str] = []
+        super().__init__(*args, **kwargs)
 
     @staticmethod
     def _check_tag(tag):
