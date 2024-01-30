@@ -19,6 +19,9 @@ classifiers = [
 ]
 dynamic = ["dependencies"]
 
+[tool.hatch.build.targets.wheel]
+packages = ["ontu_parser/"]
+
 [tool.hatch.metadata.hooks.requirements_txt]
 files = ["requirements.txt"]
 
