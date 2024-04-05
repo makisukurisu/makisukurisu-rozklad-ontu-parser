@@ -14,7 +14,7 @@ from .enums import RequestsEnum
 API_URL = "https://rozklad.ontu.edu.ua"
 DEFAULT_HEADERS = {
     # Why not? I like to show off :)
-    "User-Agent": "rozklad-ontu-parser; (ontu_schedule_bot)",
+    "User-Agent": "makisukurisu/rozklad-ontu-parser; (ontu_schedule_bot)",
 }
 
 
@@ -60,7 +60,7 @@ class Cookies(TTLValue):
         if self._value and self.is_valid():
             return self._value
 
-        logging.info("Cookies are being updated")
+        logging.warning("Cookies are being updated")
         cookie = self.get_cookie()
         if not cookie:
             raise RuntimeError("Could not get cookies")
@@ -110,12 +110,10 @@ class Cookies(TTLValue):
             except ValueError as exception:
                 delay = attempt * attempt
                 logging.error(
-                    "Could not get cookies, got exception: {exception}.\n"
-                    "Retrying in {delay} seconds",
-                    args=[
-                        exception,
-                        delay,
-                    ],
+                    f"Could not get cookies, got exception: {exception}.",
+                )
+                logging.warning(
+                    f"Retrying in {delay} seconds",
                 )
                 time.sleep(delay)
         raise RuntimeError("Could not get cookies after 3 attempts")
@@ -171,9 +169,7 @@ class Sender(BaseClass):
             )
         except Exception as exception:
             raise ValueError(
-                f"could not get response from {link}, got exception: {exception}",
-                link,
-                exception,
+                f"could not get response from {link}, got exception: {exception}"
             ) from exception
         if response.status_code != RequestsEnum.code_ok():
             raise ValueError(

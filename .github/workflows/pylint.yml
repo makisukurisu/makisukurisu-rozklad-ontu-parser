@@ -21,4 +21,4 @@ jobs:
         pip install -r requirements.txt
     - name: Analysing the code with pylint
       run: |
-        pylint ontu_parser --disable=R0903
+        pylint ontu_parser --disable=R0903,W1203

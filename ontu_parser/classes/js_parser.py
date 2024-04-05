@@ -7,6 +7,7 @@ import urllib.parse
 from base64 import b64encode
 from hashlib import sha256
 from typing import TypedDict
+import time
 
 from bs4 import BeautifulSoup
 
@@ -114,6 +115,7 @@ class JavaScriptParser:
         """
         This methods parses JavaScript from HTML and returns CookieValues object
         """
+        start = time.time()
         script_tags = self._extract_script_tags()
         pow_result_script: str | None = None
 
@@ -130,6 +132,14 @@ class JavaScriptParser:
             raise ValueError("Could not find pow_result script")
 
         self._get_pow_result(pow_result_script)
+        end = time.time()
+
+        # Stupid artificial delay posed by the website
+        # 5.5 should be fine, but I'll add 0.5 just in case
+        duration = end - start
+        min_duration = 6
+        if duration < min_duration:
+            time.sleep(min_duration - duration)
 
         return CookieValues(
             notbot=self._notbot_value,
