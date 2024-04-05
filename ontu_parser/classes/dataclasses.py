@@ -3,11 +3,11 @@
     Like Faculty or Group, provides methods to get names, ids, etc.
 """
 from urllib.parse import parse_qsl
-from attrs import define
 
+from attrs import define
 from bs4.element import Tag
 
-from .base import BaseClass
+from ontu_parser.classes.base import BaseClass
 
 
 class BaseTag(BaseClass):
@@ -396,7 +396,9 @@ class StudentsSchedule(BaseSchedule):
         """Parses bs4 tags to list of Pair objects"""
         prepared_tags: list[StudentsPair] = []
         for tag in tags:
-            prepared_tags.append(StudentsPair.from_tag(tag, subgroup_id=self.subgroup_id))
+            prepared_tags.append(
+                StudentsPair.from_tag(tag, subgroup_id=self.subgroup_id)
+            )
         return prepared_tags
 
     def _get_week(self):
@@ -446,7 +448,9 @@ class TeachersPair(BaseTag):
 
     def parse_tag(self):
         """This method parses bs4 and stores data from it in object's fields"""
-        pair_no_text = self.pair_tag.attrs.get("data-title-caption", self.__pair_no_not_specified)
+        pair_no_text = self.pair_tag.attrs.get(
+            "data-title-caption", self.__pair_no_not_specified
+        )
         if pair_no_text != self.__pair_no_not_specified:
             self.pair_no = int(pair_no_text.split()[0])
         else:
@@ -574,14 +578,18 @@ class Department(BaseTag):
     def get_department_name(self) -> dict[str, str]:
         """Returns name of the faculty"""
         name = {"short": "", "full": ""}
-        short_name_span = self.department.find(name="span", attrs={"class": "branding-bar"})
+        short_name_span = self.department.find(
+            name="span", attrs={"class": "branding-bar"}
+        )
         full_name_span = self.department.find(name="div", attrs={"class": "slide-back"})
         name["short"] = short_name_span.text.strip() if short_name_span else ""
         full_name = full_name_span.text.strip() if full_name_span else ""
         name["full"] = full_name
         if full_name:
             words = full_name.split()
-            name["full"] = " ".join([x.capitalize() if len(x) > 2 else x for x in words])
+            name["full"] = " ".join(
+                [x.capitalize() if len(x) > 2 else x for x in words]
+            )
         return name
 
 
@@ -640,12 +648,16 @@ class Teacher(BaseTag):
     def get_teacher_name(self) -> dict[str, str]:
         """Returns name of the faculty"""
         name = {"short": "", "full": ""}
-        short_name_span = self.teacher.find(name="span", attrs={"class": "branding-bar"})
+        short_name_span = self.teacher.find(
+            name="span", attrs={"class": "branding-bar"}
+        )
         full_name_span = self.teacher.find(name="div", attrs={"class": "slide-back"})
         name["short"] = short_name_span.text.strip() if short_name_span else ""
         full_name = full_name_span.text.strip() if full_name_span else ""
         name["full"] = full_name
         if full_name:
             words = full_name.split()
-            name["full"] = " ".join([x.capitalize() if len(x) > 2 else x for x in words])
+            name["full"] = " ".join(
+                [x.capitalize() if len(x) > 2 else x for x in words]
+            )
         return name

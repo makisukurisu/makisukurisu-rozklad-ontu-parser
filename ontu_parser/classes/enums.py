@@ -1,22 +1,30 @@
 """Enumerators"""
-from enum import Enum
+from enum import Enum, StrEnum
 
 
 class RequestsEnum:
     """Contains information for Requests library"""
 
-    class Methods(Enum):
+    class Methods(StrEnum):
         """Contains used HTTP Methods for requests"""
 
         GET = "GET"
         POST = "POST"
 
-        CHOICES = [GET, POST]
+        @classmethod
+        def choices(cls):
+            """Returns list of available choices
+
+            Returns:
+                list[str]: list of available choices
+            """
+            return [cls.GET.value, cls.POST.value]
 
     class Codes(Enum):
         """Contains used HTTP response codes"""
 
         OK = 200
+        SERVICE_UNAVAILABLE = 503
 
     @classmethod
     def code_ok(cls):
