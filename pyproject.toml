@@ -10,7 +10,7 @@ authors = [
 ]
 description = "Package for parsing data from rozklad.ontu.edu.ua"
 readme = "readme.md"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: BSD License",
