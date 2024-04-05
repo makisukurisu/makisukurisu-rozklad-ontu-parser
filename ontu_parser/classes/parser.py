@@ -1,10 +1,11 @@
 """Module for parser class"""
-from requests import Response
 from bs4 import BeautifulSoup
+from requests import Response
 
 from .base import BaseClass
+from .dataclasses import (Department, Faculty, Group, StudentsSchedule,
+                          Teacher, TeacherSchedule)
 from .enums import RequestsEnum
-from .dataclasses import Faculty, Group, StudentsSchedule, Department, Teacher, TeacherSchedule
 from .sender import Sender
 
 
