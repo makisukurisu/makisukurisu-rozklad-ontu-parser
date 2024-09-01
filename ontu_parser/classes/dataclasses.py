@@ -1,7 +1,8 @@
 """
-    Contains classes needed to get data
-    Like Faculty or Group, provides methods to get names, ids, etc.
+Contains classes needed to get data
+Like Faculty or Group, provides methods to get names, ids, etc.
 """
+
 from urllib.parse import parse_qsl
 
 from attrs import define
@@ -28,6 +29,8 @@ class BaseTag(BaseClass):
 class Faculty(BaseTag):
     """Describes faculty from BS4 tag"""
 
+    parent_id: int | None
+    prefix: str
     faculty_tag: Tag
 
     @staticmethod
@@ -50,9 +53,18 @@ class Faculty(BaseTag):
             raise ValueError(f"Invalid tag: {tag}, `span` has no string", tag)
 
     @classmethod
-    def from_tag(cls, tag):
+    def from_tag(
+        cls,
+        tag,
+        prefix: str = "",
+        parent_id: int | None = None,
+    ):
         cls._check_tag(tag)
-        return cls(faculty_tag=tag)
+        return cls(
+            faculty_tag=tag,
+            prefix=prefix,
+            parent_id=parent_id,
+        )
 
     def get_faculty_picture(self):
         """Returns relative link to picture (if present)"""
@@ -64,7 +76,7 @@ class Faculty(BaseTag):
 
     def get_faculty_name(self):
         """Returns name of the faculty"""
-        return self.faculty_tag.span.string
+        return f"{self.prefix}{self.faculty_tag.span.string}"
 
 
 @define

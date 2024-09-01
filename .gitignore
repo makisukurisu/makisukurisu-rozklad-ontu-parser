@@ -2,3 +2,4 @@
 *.log
 dist/
 *__pycache__*
+.venv/
