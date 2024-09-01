@@ -1,10 +1,17 @@
 """Module for parser class"""
+
 from bs4 import BeautifulSoup
 from requests import Response
 
 from .base import BaseClass
-from .dataclasses import (Department, Faculty, Group, StudentsSchedule,
-                          Teacher, TeacherSchedule)
+from .dataclasses import (
+    Department,
+    Faculty,
+    Group,
+    StudentsSchedule,
+    Teacher,
+    TeacherSchedule,
+)
 from .enums import RequestsEnum
 from .sender import Sender
 
@@ -34,14 +41,63 @@ class Parser(BaseClass):
             method=RequestsEnum.method_get()  # No data gives 'main' page with faculties
         )
         faculty_page = self._get_page(faculties_response)
-        faculty_tags = faculty_page.find_all(attrs={"class": "fc"})  # Faculties have class 'fc'
+        faculty_tags = faculty_page.find_all(
+            attrs={"class": "fc"}
+        )  # Faculties have class 'fc'
         faculty_entities = []
         for tag in faculty_tags:
             faculty_entities.append(Faculty.from_tag(tag))
         return faculty_entities
 
-    def get_groups(self, faculty_id) -> list[Group]:
+    def get_all_extramurals(self) -> list[Faculty]:
+        """Returns a list of extramural faculties"""
+        faculties = self.get_faculties()
+        extramurals = []
+        for faculty in faculties:
+            extramural = self.get_extramural(faculty.get_faculty_id())
+            if extramural:
+                extramurals.append(extramural)
+
+        return extramurals
+
+    def get_extramural(self: "Parser", faculty_id: int) -> Faculty | None:
+        """
+        Returns extramural faculty by faculty id
+        Returns None if no extramural faculty found
+        """
+        faculty_data = self.sender.send_request(
+            method=RequestsEnum.method_post(),
+            data={"facultyid": faculty_id},
+        )
+        faculty_page = self._get_page(faculty_data)
+        faculty_tag = faculty_page.find(attrs={"class": "fc"})
+        faculty_name_tag = faculty_page.find(attrs={"href": "?to_faculty=1"})
+        if faculty_tag:
+            return Faculty.from_tag(
+                faculty_tag,
+                prefix=(faculty_name_tag.text + " - ") if faculty_name_tag else "",
+                parent_id=faculty_id,
+            )
+        return None
+
+    def get_groups(
+        self,
+        faculty_id: int | str | None = None,
+        faculty: Faculty | None = None,
+    ) -> list[Group]:
         """Returns Group list of a faculty by faculty id"""
+        if isinstance(faculty_id, str):
+            faculty_id = int(faculty_id)
+        if isinstance(faculty, Faculty):
+            faculty_id = int(faculty.get_faculty_id())
+            if faculty.parent_id:
+                # Someone has decided that extramural groups can only be seen if you have seen this
+                # specific parent first :shrug:
+                self.get_groups(faculty_id=faculty.parent_id)
+
+        if not any([faculty_id, faculty]):
+            raise ValueError("Please specify one of the optional parameters")
+
         groups_response = self.sender.send_request(
             method=RequestsEnum.method_post(),
             data={"facultyid": faculty_id},
@@ -99,7 +155,10 @@ class Parser(BaseClass):
         if all_time:
             query["page"] = "teacher_all"
             query["show"] = 1
-        schedule_response = self.sender.send_request(method=RequestsEnum.method_get(), query=query)
+        schedule_response = self.sender.send_request(
+            method=RequestsEnum.method_get(),
+            query=query,
+        )
         schedule_page = self._get_page(schedule_response)
 
         grid = schedule_page.find(name="div", attrs={"class": "grid"})
@@ -153,7 +212,9 @@ class Parser(BaseClass):
         """Returns a list of departments"""
         self._check_for_teachers()
 
-        departments_response = self.sender.send_request(method=RequestsEnum.method_get())
+        departments_response = self.sender.send_request(
+            method=RequestsEnum.method_get()
+        )
         departments_page = self._get_page(departments_response)
         titles = departments_page.find(attrs={"class": "tiles-grid"})
         if not titles:
@@ -169,7 +230,8 @@ class Parser(BaseClass):
         self._check_for_teachers()
 
         teachers_response = self.sender.send_request(
-            method=RequestsEnum.method_get(), query={"page": "department", "dep": department_id}
+            method=RequestsEnum.method_get(),
+            query={"page": "department", "dep": department_id},
         )
         teachers_page = self._get_page(teachers_response)
         teachers_tags = teachers_page.find_all(attrs={"class": "tiles-grid"})
